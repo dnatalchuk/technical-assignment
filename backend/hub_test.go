@@ -104,6 +104,24 @@ func TestEventHistoryLimit(t *testing.T) {
 	}
 }
 
+func TestPostEventSetsElapsed(t *testing.T) {
+	hub := newEventHub()
+	e := hub.postEvent("tenant1", "msg")
+	if e.Elapsed == "" {
+		t.Fatalf("expected elapsed to be set")
+	}
+
+	hub.mu.Lock()
+	stored := hub.tenants["tenant1"].events[0].Elapsed
+	hub.mu.Unlock()
+	if stored == "" {
+		t.Fatalf("stored event should have elapsed set")
+	}
+	if stored != e.Elapsed {
+		t.Fatalf("elapsed mismatch: %s vs %s", stored, e.Elapsed)
+	}
+}
+
 func BenchmarkPostEvent(b *testing.B) {
 	hub := newEventHub()
 	b.ReportAllocs()

@@ -171,9 +171,15 @@ func TestEventsEndpoint(t *testing.T) {
 	if e1.TenantID != "tenant1" || e1.Message != "hello1" || e1.ID == "" || e1.Timestamp.IsZero() {
 		t.Fatalf("invalid event %+v", e1)
 	}
+	if e1.Elapsed == "" {
+		t.Fatalf("expected elapsed to be set")
+	}
 	e2 := postEvent(t, client, srv.URL, "tenant2", "hello2")
 	if e2.TenantID != "tenant2" || e2.Message != "hello2" {
 		t.Fatalf("invalid event %+v", e2)
+	}
+	if e2.Elapsed == "" {
+		t.Fatalf("expected elapsed to be set")
 	}
 }
 
