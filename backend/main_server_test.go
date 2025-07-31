@@ -59,3 +59,36 @@ func TestMainHTTPServer(t *testing.T) {
 		t.Fatalf("tenantA should not receive tenantB event")
 	}
 }
+
+func TestEventsMethodNotAllowed(t *testing.T) {
+	srv := httptest.NewServer(newServer())
+	defer srv.Close()
+	client := srv.Client()
+
+	req, _ := http.NewRequest(http.MethodGet, srv.URL+"/events", nil)
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("request: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusMethodNotAllowed {
+		t.Fatalf("expected 405, got %d", resp.StatusCode)
+	}
+}
+
+func TestEventsBadJSON(t *testing.T) {
+	srv := httptest.NewServer(newServer())
+	defer srv.Close()
+	client := srv.Client()
+
+	req, _ := http.NewRequest(http.MethodPost, srv.URL+"/events", bytes.NewBufferString("{invalid"))
+	req.Header.Set("X-Tenant-ID", "tenant1")
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("request: %v", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("expected 400, got %d", resp.StatusCode)
+	}
+}
