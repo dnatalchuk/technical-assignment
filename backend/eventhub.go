@@ -28,7 +28,7 @@ type TenantHub struct {
 
 func newTenantHub() *TenantHub {
 	return &TenantHub{
-		events:      make([]Event, 0),
+		events:      make([]Event, 0, maxEvents),
 		connections: make(map[Conn]bool),
 	}
 }
