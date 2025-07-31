@@ -21,6 +21,7 @@ The backend maintains an `EventHub` containing a map of tenant IDs to their own 
 - REST endpoint `POST /events` for publishing events
 - Basic HTML frontend in `frontend/` demonstrating usage
 - In-memory storage only
+- Each event JSON includes an `elapsed` value showing server processing time
 
 ## Prerequisites
 
