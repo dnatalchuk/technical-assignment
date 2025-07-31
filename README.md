@@ -44,3 +44,9 @@ Visiting <http://localhost:8080> serves `frontend/index.html`. Open two browser 
 cd backend
 go test ./...
 ```
+
+## Continuous Integration
+
+All pushes and pull requests trigger the **Go CI** workflow. The workflow verifies
+source formatting using `gofmt`, runs `go vet` for static analysis, and executes
+`go test` to ensure the codebase remains healthy.
