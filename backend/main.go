@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
-	"time"
 )
 
 func init() {
@@ -24,7 +23,6 @@ func newServer() http.Handler {
 	mux.Handle("/", fs)
 	mux.HandleFunc("/ws", serveWS(hub))
 	mux.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
 		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -48,8 +46,7 @@ func newServer() http.Handler {
 			return
 		}
 		e := hub.postEvent(tenantID, req.Message)
-		duration := time.Since(start)
-		log.Printf("tenant %s: event posted: %s (took %v)", tenantID, req.Message, duration)
+		log.Printf("tenant %s: event posted: %s (took %s)", tenantID, req.Message, e.Elapsed)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(e)
 	})

@@ -67,7 +67,7 @@ func TestFailingConnectionRemoval(t *testing.T) {
 	defer log.SetOutput(orig)
 
 	hub.addConn(c)
-	hub.addEvent(Event{TenantID: "t1"})
+	_ = hub.addEvent(Event{TenantID: "t1"})
 
 	hub.mu.Lock()
 	_, exists := hub.connections[c]
@@ -84,10 +84,10 @@ func TestFailingConnectionRemoval(t *testing.T) {
 }
 
 func TestEventHistoryLimit(t *testing.T) {
-        hub := newTenantHub()
-        for i := 0; i < maxEvents+10; i++ {
-                hub.addEvent(Event{TenantID: "t1", Message: fmt.Sprintf("%d", i)})
-        }
+	hub := newTenantHub()
+	for i := 0; i < maxEvents+10; i++ {
+		_ = hub.addEvent(Event{TenantID: "t1", Message: fmt.Sprintf("%d", i)})
+	}
 	hub.mu.Lock()
 	count := len(hub.events)
 	first := hub.events[0].Message
@@ -99,16 +99,16 @@ func TestEventHistoryLimit(t *testing.T) {
 	if first != "10" {
 		t.Fatalf("expected oldest message to be '10', got %s", first)
 	}
-        if last != fmt.Sprintf("%d", maxEvents+9) {
-                t.Fatalf("expected last message to be %d, got %s", maxEvents+9, last)
-        }
+	if last != fmt.Sprintf("%d", maxEvents+9) {
+		t.Fatalf("expected last message to be %d, got %s", maxEvents+9, last)
+	}
 }
 
 func BenchmarkPostEvent(b *testing.B) {
-        hub := newEventHub()
-        b.ReportAllocs()
-        b.ResetTimer()
-        for i := 0; i < b.N; i++ {
-                hub.postEvent("bench", "msg")
-        }
+	hub := newEventHub()
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		hub.postEvent("bench", "msg")
+	}
 }
