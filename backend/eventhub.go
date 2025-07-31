@@ -33,7 +33,7 @@ func newTenantHub() *TenantHub {
 	}
 }
 
-// addEvent stores the event and broadcasts it
+// addEvent stores the event, broadcasts it, and returns the stored event with the Elapsed field populated
 func (h *TenantHub) addEvent(e Event) Event {
 	start := time.Now()
 	h.mu.Lock()
