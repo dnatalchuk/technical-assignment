@@ -44,6 +44,15 @@ Visiting <http://localhost:8080> serves `frontend/index.html`. Open two browser 
 cd backend
 go test ./...
 ```
+## Benchmark
+
+To check event broadcast performance, run:
+
+```
+cd backend
+go test -bench .
+```
+
 
 ## Continuous Integration
 
