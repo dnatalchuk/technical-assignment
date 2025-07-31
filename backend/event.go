@@ -13,6 +13,7 @@ type Event struct {
 	TenantID  string    `json:"tenant_id"`
 	Message   string    `json:"message"`
 	Timestamp time.Time `json:"timestamp"`
+	Elapsed   string    `json:"elapsed"`
 }
 
 // newEvent creates a new event with generated ID and current timestamp
