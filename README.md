@@ -54,7 +54,7 @@ $ cd backend
 $ go run .
 2025/07/31 17:44:45.000000 UTC listening on :8080
 2025/07/31 17:44:50.123456 UTC tenant tenantA: websocket connection established
-2025/07/31 17:44:53.654321 UTC tenant tenantA: event posted: hello
+2025/07/31 17:44:53.654321 UTC tenant tenantA: event posted: hello (took 200µs)
 ```
 
 The frontend lists each event with a local timestamp:

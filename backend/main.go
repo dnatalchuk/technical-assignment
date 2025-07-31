@@ -1,16 +1,17 @@
 package main
 
 import (
-        "encoding/json"
-        "io"
-        "log"
-        "net/http"
-        "path/filepath"
+	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"path/filepath"
+	"time"
 )
 
 func init() {
-        // Include microseconds and UTC in log output for clearer timestamps
-        log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.LUTC)
+	// Include microseconds and UTC in log output for clearer timestamps
+	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.LUTC)
 }
 
 func main() {
@@ -21,6 +22,7 @@ func main() {
 	http.Handle("/", fs)
 	http.HandleFunc("/ws", serveWS(hub))
 	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -44,7 +46,8 @@ func main() {
 			return
 		}
 		e := hub.postEvent(tenantID, req.Message)
-		log.Printf("tenant %s: event posted: %s", tenantID, req.Message)
+		duration := time.Since(start)
+		log.Printf("tenant %s: event posted: %s (took %v)", tenantID, req.Message, duration)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(e)
 	})
