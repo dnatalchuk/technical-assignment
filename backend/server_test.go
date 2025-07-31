@@ -221,3 +221,82 @@ func TestWebsocketTenantIsolation(t *testing.T) {
 		t.Fatalf("tenantA should not receive event from B")
 	}
 }
+func TestServeWSValidation(t *testing.T) {
+	hub := newEventHub()
+	srv := httptest.NewServer(serveWS(hub))
+	defer srv.Close()
+	client := srv.Client()
+
+	testCases := []struct {
+		name    string
+		path    string
+		headers map[string]string
+		expect  string
+	}{
+		{
+			name: "missing tenant",
+			path: "/ws",
+			headers: map[string]string{
+				"Connection":            "Upgrade",
+				"Upgrade":               "websocket",
+				"Sec-WebSocket-Version": "13",
+				"Sec-WebSocket-Key":     "abc",
+			},
+			expect: "missing tenant",
+		},
+		{
+			name: "missing connection",
+			path: "/ws?tenant=t1",
+			headers: map[string]string{
+				"Upgrade":               "websocket",
+				"Sec-WebSocket-Version": "13",
+				"Sec-WebSocket-Key":     "abc",
+			},
+			expect: "not websocket",
+		},
+		{
+			name: "missing upgrade",
+			path: "/ws?tenant=t1",
+			headers: map[string]string{
+				"Connection":            "Upgrade",
+				"Sec-WebSocket-Version": "13",
+				"Sec-WebSocket-Key":     "abc",
+			},
+			expect: "not websocket",
+		},
+		{
+			name: "missing key",
+			path: "/ws?tenant=t1",
+			headers: map[string]string{
+				"Connection":            "Upgrade",
+				"Upgrade":               "websocket",
+				"Sec-WebSocket-Version": "13",
+			},
+			expect: "missing key",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodGet, srv.URL+tc.path, nil)
+			if err != nil {
+				t.Fatalf("new request: %v", err)
+			}
+			for k, v := range tc.headers {
+				req.Header.Set(k, v)
+			}
+			resp, err := client.Do(req)
+			if err != nil {
+				t.Fatalf("do request: %v", err)
+			}
+			body, _ := io.ReadAll(resp.Body)
+			resp.Body.Close()
+			if resp.StatusCode != http.StatusBadRequest {
+				t.Fatalf("expected 400, got %d", resp.StatusCode)
+			}
+			if !strings.Contains(string(body), tc.expect) {
+				t.Fatalf("expected body to contain %q, got %q", tc.expect, string(body))
+			}
+		})
+	}
+}
