@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -79,5 +80,26 @@ func TestFailingConnectionRemoval(t *testing.T) {
 	}
 	if !strings.Contains(buf.String(), "failed to write event") {
 		t.Fatalf("expected log message for write failure")
+	}
+}
+
+func TestEventHistoryLimit(t *testing.T) {
+	hub := newTenantHub()
+	for i := 0; i < maxEvents+10; i++ {
+		hub.addEvent(Event{TenantID: "t1", Message: fmt.Sprintf("%d", i)})
+	}
+	hub.mu.Lock()
+	count := len(hub.events)
+	first := hub.events[0].Message
+	last := hub.events[len(hub.events)-1].Message
+	hub.mu.Unlock()
+	if count != maxEvents {
+		t.Fatalf("expected %d events, got %d", maxEvents, count)
+	}
+	if first != "10" {
+		t.Fatalf("expected oldest message to be '10', got %s", first)
+	}
+	if last != fmt.Sprintf("%d", maxEvents+9) {
+		t.Fatalf("expected last message to be %d, got %s", maxEvents+9, last)
 	}
 }
