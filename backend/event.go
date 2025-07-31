@@ -21,7 +21,7 @@ func newEvent(tenantID, message string) Event {
 		ID:        generateID(),
 		TenantID:  tenantID,
 		Message:   message,
-		Timestamp: time.Now().UTC(),
+		Timestamp: time.Now().UTC().Truncate(time.Second),
 	}
 }
 
