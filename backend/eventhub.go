@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"sync"
+	"time"
 )
 
 const maxEvents = 1000
@@ -33,17 +34,22 @@ func newTenantHub() *TenantHub {
 }
 
 // addEvent stores the event and broadcasts it
-func (h *TenantHub) addEvent(e Event) {
+func (h *TenantHub) addEvent(e Event) Event {
+	start := time.Now()
 	h.mu.Lock()
 	if len(h.events) >= maxEvents {
 		h.events = h.events[1:]
 	}
 	h.events = append(h.events, e)
+	idx := len(h.events) - 1
 
 	conns := make([]Conn, 0, len(h.connections))
 	for c := range h.connections {
 		conns = append(conns, c)
 	}
+	elapsed := time.Since(start).String()
+	h.events[idx].Elapsed = elapsed
+	e.Elapsed = elapsed
 	h.mu.Unlock()
 
 	for _, c := range conns {
@@ -57,6 +63,7 @@ func (h *TenantHub) addEvent(e Event) {
 			}
 		}
 	}
+	return e
 }
 
 // addConn registers a new connection
@@ -94,8 +101,7 @@ func (h *EventHub) postEvent(tenantID, message string) Event {
 	tenant := h.ensureTenant(tenantID)
 	h.mu.Unlock()
 	e := newEvent(tenantID, message)
-	tenant.addEvent(e)
-	return e
+	return tenant.addEvent(e)
 }
 
 func (h *EventHub) ensureTenant(id string) *TenantHub {

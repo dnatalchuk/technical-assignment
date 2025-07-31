@@ -64,16 +64,18 @@ POSTing a new event responds with the stored event in JSON:
   "id": "8a9f6e2c1b2d3e4f5a6b7c8d9e0f1a2b",
   "tenant_id": "tenantA",
   "message": "hello",
-  "timestamp": "2025-07-31T17:44:53.654321Z"
+  "timestamp": "2025-07-31T17:44:53.654321Z",
+  "elapsed": "200µs"
 }
 ```
 The timestamp follows the same format printed in the log lines above and only
 the `HH:MM:SS` portion is shown in the UI, as in the following example:
 
-The frontend lists each event with a local timestamp:
+The frontend lists each event with a local timestamp and the time it took for the
+server to process the event:
 
 ```
-17:44:53 - hello
+17:44:53 - hello (took 200µs)
 ```
 
 ## Testing
