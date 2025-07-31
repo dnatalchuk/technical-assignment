@@ -57,16 +57,18 @@ $ go run .
 2025/07/31 17:44:53.654321 UTC tenant tenantA: event posted: hello (took 200µs)
 ```
 
-Posting an event returns JSON like:
+POSTing a new event responds with the stored event in JSON:
 
 ```json
 {
-  "id": "123abc",
+  "id": "8a9f6e2c1b2d3e4f5a6b7c8d9e0f1a2b",
   "tenant_id": "tenantA",
   "message": "hello",
-  "timestamp": "2025-01-20T10:30:00Z"
+  "timestamp": "2025-07-31T17:44:53.654321Z"
 }
 ```
+The timestamp follows the same format printed in the log lines above and only
+the `HH:MM:SS` portion is shown in the UI, as in the following example:
 
 The frontend lists each event with a local timestamp:
 
