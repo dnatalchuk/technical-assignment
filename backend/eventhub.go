@@ -34,16 +34,24 @@ func newTenantHub() *TenantHub {
 func (h *TenantHub) addEvent(e Event) {
 	h.mu.Lock()
 	h.events = append(h.events, e)
+
+	conns := make([]Conn, 0, len(h.connections))
 	for c := range h.connections {
+		conns = append(conns, c)
+	}
+	h.mu.Unlock()
+
+	for _, c := range conns {
 		if err := c.WriteJSON(e); err != nil {
 			log.Printf("tenant %s: failed to write event: %v", e.TenantID, err)
+			h.mu.Lock()
 			delete(h.connections, c)
+			h.mu.Unlock()
 			if err := c.Close(); err != nil {
 				log.Printf("tenant %s: failed to close connection: %v", e.TenantID, err)
 			}
 		}
 	}
-	h.mu.Unlock()
 }
 
 // addConn registers a new connection
