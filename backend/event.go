@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"log"
 	"time"
 )
 
@@ -27,6 +28,7 @@ func newEvent(tenantID, message string) Event {
 func generateID() string {
 	b := make([]byte, 16)
 	if _, err := rand.Read(b); err != nil {
+		log.Printf("generateID failed: %v", err)
 		return ""
 	}
 	return hex.EncodeToString(b)
