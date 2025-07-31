@@ -9,6 +9,11 @@ This project provides a simple real-time event broadcasting system implemented i
 - Basic HTML frontend in `frontend/` demonstrating usage
 - In-memory storage only
 
+## Prerequisites
+
+- Go 1.20 or newer. See <https://go.dev/doc/install> for installation instructions.
+- No additional dependencies are required. The provided tests can be run with `go test ./...`.
+
 ## Running
 
 ```
