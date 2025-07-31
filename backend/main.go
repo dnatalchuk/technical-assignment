@@ -29,10 +29,12 @@ func main() {
 			Message string `json:"message"`
 		}
 		if err := json.Unmarshal(body, &req); err != nil {
+			log.Printf("tenant %s: json parse error: %v", tenantID, err)
 			http.Error(w, "bad json", http.StatusBadRequest)
 			return
 		}
 		e := hub.postEvent(tenantID, req.Message)
+		log.Printf("tenant %s: event posted: %s", tenantID, req.Message)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(e)
 	})

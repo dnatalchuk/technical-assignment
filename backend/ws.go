@@ -60,10 +60,11 @@ func (w *wsConn) writeFrame(opcode byte, payload []byte) error {
 	return err
 }
 
-func (w *wsConn) readLoop(onClose func()) {
+func (w *wsConn) readLoop(tenantID string, onClose func()) {
 	buf := make([]byte, 2)
 	for {
 		if _, err := io.ReadFull(w.c, buf); err != nil {
+			log.Printf("tenant %s: read error: %v", tenantID, err)
 			break
 		}
 		fin := buf[0]&0x80 != 0
@@ -73,12 +74,14 @@ func (w *wsConn) readLoop(onClose func()) {
 		if length == 126 {
 			ext := make([]byte, 2)
 			if _, err := io.ReadFull(w.c, ext); err != nil {
+				log.Printf("tenant %s: read error: %v", tenantID, err)
 				break
 			}
 			length = int(binary.BigEndian.Uint16(ext))
 		} else if length == 127 {
 			ext := make([]byte, 8)
 			if _, err := io.ReadFull(w.c, ext); err != nil {
+				log.Printf("tenant %s: read error: %v", tenantID, err)
 				break
 			}
 			length = int(binary.BigEndian.Uint64(ext))
@@ -86,11 +89,13 @@ func (w *wsConn) readLoop(onClose func()) {
 		maskKey := make([]byte, 4)
 		if masked {
 			if _, err := io.ReadFull(w.c, maskKey); err != nil {
+				log.Printf("tenant %s: read error: %v", tenantID, err)
 				break
 			}
 		}
 		payload := make([]byte, length)
 		if _, err := io.ReadFull(w.c, payload); err != nil {
+			log.Printf("tenant %s: read error: %v", tenantID, err)
 			break
 		}
 		if masked {
@@ -108,6 +113,7 @@ func (w *wsConn) readLoop(onClose func()) {
 		// ignore payload for now
 	}
 	onClose()
+	log.Printf("tenant %s: connection closed", tenantID)
 }
 
 func (w *wsConn) Close() error {
@@ -120,26 +126,31 @@ func serveWS(hub *EventHub) http.HandlerFunc {
 		tenantID := r.URL.Query().Get("tenant")
 		if tenantID == "" {
 			http.Error(w, "missing tenant", http.StatusBadRequest)
+			log.Printf("handshake failed: missing tenant")
 			return
 		}
 		if !headerContains(r.Header, "Connection", "upgrade") ||
 			!headerContains(r.Header, "Upgrade", "websocket") {
 			http.Error(w, "not websocket", http.StatusBadRequest)
+			log.Printf("tenant %s: handshake failed: not websocket", tenantID)
 			return
 		}
 		key := r.Header.Get("Sec-WebSocket-Key")
 		if key == "" {
 			http.Error(w, "missing key", http.StatusBadRequest)
+			log.Printf("tenant %s: handshake failed: missing key", tenantID)
 			return
 		}
 		hijacker, ok := w.(http.Hijacker)
 		if !ok {
 			http.Error(w, "cannot hijack", http.StatusInternalServerError)
+			log.Printf("tenant %s: handshake failed: cannot hijack", tenantID)
 			return
 		}
 		netConn, buf, err := hijacker.Hijack()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Printf("tenant %s: hijack error: %v", tenantID, err)
 			return
 		}
 		if buf.Reader.Buffered() > 0 {
@@ -151,12 +162,14 @@ func serveWS(hub *EventHub) http.HandlerFunc {
 			"Connection: Upgrade\r\n" +
 			"Sec-WebSocket-Accept: " + accept + "\r\n\r\n"
 		if _, err := netConn.Write([]byte(resp)); err != nil {
+			log.Printf("tenant %s: handshake write error: %v", tenantID, err)
 			netConn.Close()
 			return
 		}
+		log.Printf("tenant %s: websocket connection established", tenantID)
 		ws := newWSConn(netConn)
 		hub.registerConn(tenantID, ws)
-		go ws.readLoop(func() {
+		go ws.readLoop(tenantID, func() {
 			hub.unregisterConn(tenantID, ws)
 		})
 	}

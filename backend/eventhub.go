@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"sync"
 )
 
@@ -34,7 +35,13 @@ func (h *TenantHub) addEvent(e Event) {
 	h.mu.Lock()
 	h.events = append(h.events, e)
 	for c := range h.connections {
-		_ = c.WriteJSON(e)
+		if err := c.WriteJSON(e); err != nil {
+			log.Printf("tenant %s: failed to write event: %v", e.TenantID, err)
+			delete(h.connections, c)
+			if err := c.Close(); err != nil {
+				log.Printf("tenant %s: failed to close connection: %v", e.TenantID, err)
+			}
+		}
 	}
 	h.mu.Unlock()
 }
@@ -51,7 +58,9 @@ func (h *TenantHub) removeConn(c Conn) {
 	h.mu.Lock()
 	if _, ok := h.connections[c]; ok {
 		delete(h.connections, c)
-		_ = c.Close()
+		if err := c.Close(); err != nil {
+			log.Printf("failed to close connection: %v", err)
+		}
 	}
 	h.mu.Unlock()
 }

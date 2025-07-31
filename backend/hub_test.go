@@ -1,7 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"log"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -25,6 +29,15 @@ func (f *fakeConn) WriteJSON(v interface{}) error {
 
 func (f *fakeConn) Close() error { return nil }
 
+type errConn struct{ closed bool }
+
+func (e *errConn) WriteJSON(v interface{}) error { return errors.New("boom") }
+
+func (e *errConn) Close() error {
+	e.closed = true
+	return nil
+}
+
 func TestTenantIsolation(t *testing.T) {
 	hub := newEventHub()
 	cA := &fakeConn{}
@@ -41,5 +54,30 @@ func TestTenantIsolation(t *testing.T) {
 	}
 	if len(cB.msgs) != 1 || cB.msgs[0].Message != "hello B" {
 		t.Fatalf("tenant B should receive its event")
+	}
+}
+
+func TestFailingConnectionRemoval(t *testing.T) {
+	hub := newTenantHub()
+	c := &errConn{}
+	var buf bytes.Buffer
+	orig := log.Writer()
+	log.SetOutput(&buf)
+	defer log.SetOutput(orig)
+
+	hub.addConn(c)
+	hub.addEvent(Event{TenantID: "t1"})
+
+	hub.mu.Lock()
+	_, exists := hub.connections[c]
+	hub.mu.Unlock()
+	if exists {
+		t.Fatalf("connection should be removed after failure")
+	}
+	if !c.closed {
+		t.Fatalf("connection should be closed")
+	}
+	if !strings.Contains(buf.String(), "failed to write event") {
+		t.Fatalf("expected log message for write failure")
 	}
 }
