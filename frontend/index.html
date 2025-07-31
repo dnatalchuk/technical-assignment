@@ -4,11 +4,24 @@
     <meta charset="utf-8" />
     <title>Event Feed</title>
     <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 600px;
+        margin: 40px auto;
+      }
+      #controls {
+        margin-bottom: 10px;
+      }
       #events {
         border: 1px solid #ccc;
         height: 200px;
-        overflow-y: scroll;
-        padding: 5px;
+        overflow-y: auto;
+        padding: 0;
+        list-style: none;
+      }
+      #events li {
+        padding: 4px;
+        border-bottom: 1px solid #eee;
       }
       .highlight {
         background-color: #ffffcc;
@@ -17,15 +30,17 @@
     </style>
   </head>
   <body>
-    <label
-      >Tenant:
-      <select id="tenant">
-        <option value="tenantA">Tenant A</option>
-        <option value="tenantB">Tenant B</option>
-      </select>
-    </label>
-    <button id="connect">Connect</button>
-    <div id="status"></div>
+    <div id="controls">
+      <label>
+        Tenant:
+        <select id="tenant">
+          <option value="tenantA">Tenant A</option>
+          <option value="tenantB">Tenant B</option>
+        </select>
+      </label>
+      <button id="connect">Connect</button>
+      <span id="status"></span>
+    </div>
     <ul id="events"></ul>
     <form id="eventForm">
       <input type="text" id="message" placeholder="message" required />
@@ -43,7 +58,8 @@
         ws.onmessage = (e) => {
           const ev = JSON.parse(e.data);
           const li = document.createElement("li");
-          li.textContent = `${ev.timestamp} - ${ev.message}`;
+          const ts = new Date(ev.timestamp).toLocaleTimeString();
+          li.textContent = `${ts} - ${ev.message}`;
           li.classList.add("highlight");
           eventsList.appendChild(li);
           setTimeout(() => li.classList.remove("highlight"), 1000);
