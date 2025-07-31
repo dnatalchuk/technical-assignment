@@ -14,14 +14,16 @@ func init() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.LUTC)
 }
 
-func main() {
+func newServer() http.Handler {
 	hub := newEventHub()
+	mux := http.NewServeMux()
+
 	frontendDir := filepath.Join("..", "frontend")
 	fs := http.FileServer(http.Dir(frontendDir))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
-	http.Handle("/", fs)
-	http.HandleFunc("/ws", serveWS(hub))
-	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
+	mux.Handle("/static/", http.StripPrefix("/static/", fs))
+	mux.Handle("/", fs)
+	mux.HandleFunc("/ws", serveWS(hub))
+	mux.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		if r.Method != http.MethodPost {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -51,6 +53,10 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(e)
 	})
+	return mux
+}
+
+func main() {
 	log.Println("listening on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", newServer()))
 }
