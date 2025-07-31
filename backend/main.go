@@ -5,10 +5,15 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 )
 
 func main() {
 	hub := newEventHub()
+	frontendDir := filepath.Join("..", "frontend")
+	fs := http.FileServer(http.Dir(frontendDir))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	http.Handle("/", fs)
 	http.HandleFunc("/ws", serveWS(hub))
 	http.HandleFunc("/events", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {

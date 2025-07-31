@@ -16,7 +16,7 @@ cd backend
 go run .
 ```
 
-Open `frontend/index.html` in your browser. Use two browser windows with different tenants to verify that events are isolated.
+Navigate to `http://localhost:8080` in your browser. Use two browser windows with different tenants to verify that events are isolated.
 
 ## Testing
 
