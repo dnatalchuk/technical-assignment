@@ -42,3 +42,12 @@ Navigate to `http://localhost:8080` in your browser. Use two browser windows wit
 cd backend
 go test ./...
 ```
+
+## Benchmarking
+
+Run the benchmark to measure the performance of posting events:
+
+```
+cd backend
+go test -bench BenchmarkPostEvent -benchmem
+```

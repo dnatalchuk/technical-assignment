@@ -81,3 +81,14 @@ func TestFailingConnectionRemoval(t *testing.T) {
 		t.Fatalf("expected log message for write failure")
 	}
 }
+func BenchmarkPostEvent(b *testing.B) {
+	hub := newEventHub()
+	tenantID := "benchTenant"
+	for i := 0; i < 5; i++ {
+		hub.registerConn(tenantID, &fakeConn{})
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		hub.postEvent(tenantID, "msg")
+	}
+}
