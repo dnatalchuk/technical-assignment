@@ -57,10 +57,11 @@ $ go run .
 2025/07/31 17:44:53.654321 UTC tenant tenantA: event posted: hello (took 200µs)
 ```
 
-The frontend lists each event with a local timestamp:
+The frontend lists each event with a local timestamp. Events you send also
+display how long the POST request took:
 
 ```
-17:44:53 - hello
+17:44:53 - hello (took 150ms)
 ```
 
 ## Testing
