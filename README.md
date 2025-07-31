@@ -64,7 +64,7 @@ POSTing a new event responds with the stored event in JSON:
   "id": "8a9f6e2c1b2d3e4f5a6b7c8d9e0f1a2b",
   "tenant_id": "tenantA",
   "message": "hello",
-  "timestamp": "2025-07-31T17:44:53.654321Z",
+  "timestamp": "2025-07-31T17:44:53Z",
   "elapsed": "200µs"
 }
 ```
