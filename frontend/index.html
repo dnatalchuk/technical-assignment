@@ -83,9 +83,10 @@
       const MAX_EVENTS = 100;
       const eventsList = document.getElementById("events");
 
-      document.getElementById("connect").onclick = () => {
-        tenant = document.getElementById("tenant").value;
-        ws = new WebSocket(`ws://${location.host}/ws?tenant=` + tenant);
+        document.getElementById("connect").onclick = () => {
+          if (ws) ws.close();
+          tenant = document.getElementById("tenant").value;
+          ws = new WebSocket(`ws://${location.host}/ws?tenant=` + tenant);
         ws.onmessage = (e) => {
           const ev = JSON.parse(e.data);
           const li = document.createElement("li");
