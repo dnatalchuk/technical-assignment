@@ -6,7 +6,7 @@
     <style>
       body {
         font-family: Arial, sans-serif;
-        background-color: #f9f9f9;
+        background-color: #eef4fb;
         max-width: 600px;
         margin: 40px auto;
         padding: 20px;
@@ -33,8 +33,14 @@
         font-size: 14px;
       }
       .highlight {
-        background-color: #ffffcc;
+        background-color: #fffa9e;
         transition: background-color 1s ease;
+      }
+      .tenantA {
+        border-left: 4px solid #007bff;
+      }
+      .tenantB {
+        border-left: 4px solid #28a745;
       }
       #eventForm {
         margin-top: 10px;
@@ -86,7 +92,7 @@
           const ts = new Date(ev.timestamp).toLocaleTimeString();
           const took = ev.elapsed ? ` (took ${ev.elapsed})` : "";
           li.textContent = `${ts} - ${ev.message}${took}`;
-          li.classList.add("highlight");
+          li.classList.add("highlight", tenant);
           eventsList.appendChild(li);
           setTimeout(() => li.classList.remove("highlight"), 1000);
           eventsList.scrollTop = eventsList.scrollHeight;
