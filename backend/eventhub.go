@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+const maxEvents = 1000
+
 // Conn defines minimal methods for a websocket connection
 // real websocket or mock must implement this interface
 // WriteJSON should serialize v as JSON and send
@@ -33,6 +35,9 @@ func newTenantHub() *TenantHub {
 // addEvent stores the event and broadcasts it
 func (h *TenantHub) addEvent(e Event) {
 	h.mu.Lock()
+	if len(h.events) >= maxEvents {
+		h.events = h.events[1:]
+	}
 	h.events = append(h.events, e)
 
 	conns := make([]Conn, 0, len(h.connections))
