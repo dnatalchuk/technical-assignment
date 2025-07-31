@@ -1,12 +1,17 @@
 package main
 
 import (
-	"encoding/json"
-	"io"
-	"log"
-	"net/http"
-	"path/filepath"
+        "encoding/json"
+        "io"
+        "log"
+        "net/http"
+        "path/filepath"
 )
+
+func init() {
+        // Include microseconds and UTC in log output for clearer timestamps
+        log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.LUTC)
+}
 
 func main() {
 	hub := newEventHub()
