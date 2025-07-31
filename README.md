@@ -57,6 +57,17 @@ $ go run .
 2025/07/31 17:44:53.654321 UTC tenant tenantA: event posted: hello (took 200µs)
 ```
 
+Posting an event returns JSON like:
+
+```json
+{
+  "id": "123abc",
+  "tenant_id": "tenantA",
+  "message": "hello",
+  "timestamp": "2025-01-20T10:30:00Z"
+}
+```
+
 The frontend lists each event with a local timestamp:
 
 ```
