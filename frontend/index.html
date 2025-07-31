@@ -24,6 +24,8 @@
 <script>
 let ws;
 let tenant;
+const MAX_EVENTS = 100;
+const eventsList = document.getElementById('events');
 
 document.getElementById('connect').onclick = () => {
   tenant = document.getElementById('tenant').value;
@@ -32,7 +34,10 @@ document.getElementById('connect').onclick = () => {
     const ev = JSON.parse(e.data);
     const li = document.createElement('li');
     li.textContent = `${ev.timestamp} - ${ev.message}`;
-    document.getElementById('events').appendChild(li);
+    eventsList.appendChild(li);
+    if (eventsList.children.length > MAX_EVENTS) {
+      eventsList.removeChild(eventsList.firstChild);
+    }
   };
   ws.onopen = () => { document.getElementById('status').textContent = 'connected'; };
   ws.onclose = () => { document.getElementById('status').textContent = 'closed'; };
