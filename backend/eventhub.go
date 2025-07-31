@@ -47,9 +47,6 @@ func (h *TenantHub) addEvent(e Event) Event {
 	for c := range h.connections {
 		conns = append(conns, c)
 	}
-	elapsed := time.Since(start).String()
-	h.events[idx].Elapsed = elapsed
-	e.Elapsed = elapsed
 	h.mu.Unlock()
 
 	for _, c := range conns {
@@ -63,6 +60,13 @@ func (h *TenantHub) addEvent(e Event) Event {
 			}
 		}
 	}
+
+	elapsed := time.Since(start).String()
+	h.mu.Lock()
+	h.events[idx].Elapsed = elapsed
+	h.mu.Unlock()
+	e.Elapsed = elapsed
+
 	return e
 }
 
